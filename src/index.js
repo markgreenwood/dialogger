@@ -1,8 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import './semantic-dist/semantic.min.css';
+import React from "react";
+import ReactDOM from "react-dom";
+import { createStore, combineReducers } from "redux";
+import { Provider } from "react-redux";
 
-import App from './App';
+import "./index.css";
+import "./semantic-dist/semantic.min.css";
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import { activeThreadId, threads } from "./reducers";
+
+import App from "./App";
+
+const store = createStore(
+  combineReducers({
+    activeThreadId: activeThreadId,
+    threads: threads
+  })
+);
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
