@@ -1,5 +1,6 @@
 import React from "react";
 import { createStore, combineReducers } from "redux";
+import { Provider, connect } from "react-redux";
 
 import { activeThreadId, threads } from "./reducers";
 
@@ -10,36 +11,19 @@ const reducer = combineReducers({
 
 const store = createStore(reducer);
 
-class Thread extends React.Component {
-  handleClick = id =>
-    store.dispatch({
-      type: "DELETE_MESSAGE",
-      id
-    });
-
-  render() {
-    const messages = this.props.thread.messages.map((m, index) => (
-      <div
-        className="comment"
-        key={index}
-        onClick={() => this.handleClick(m.id)}
-      >
+const MessageList = props => (
+  <div className="ui comments">
+    {props.messages.map((m, index) => (
+      <div className="comment" key={index} onClick={() => props.onClick(m.id)}>
         <div className="text">
           {m.text} <span className="metadata">@{m.timestamp}</span>
         </div>
       </div>
-    ));
+    ))}
+  </div>
+);
 
-    return (
-      <div className="ui center aligned basic segment">
-        <div className="ui comments">{messages}</div>
-        <MessageInput threadId={this.props.thread.id} />
-      </div>
-    );
-  }
-}
-
-class MessageInput extends React.Component {
+class TextFieldSubmit extends React.Component {
   state = {
     value: ""
   };
@@ -47,11 +31,7 @@ class MessageInput extends React.Component {
   onChange = e => this.setState({ value: e.target.value });
 
   handleSubmit = () => {
-    store.dispatch({
-      type: "ADD_MESSAGE",
-      text: this.state.value,
-      threadId: this.props.threadId
-    });
+    this.props.onSubmit(this.state.value);
     this.setState({ value: "" });
   };
 
@@ -71,45 +51,92 @@ class MessageInput extends React.Component {
   }
 }
 
-class ThreadTabs extends React.Component {
-  render() {
-    const tabs = this.props.tabs.map((tab, index) => (
+const Thread = props => (
+  <div className="ui center aligned basic segment">
+    <MessageList
+      messages={props.thread.messages}
+      onClick={props.onMessageClick}
+    />
+    <TextFieldSubmit onSubmit={props.onMessageSubmit} />
+  </div>
+);
+
+const mapStateToThreadProps = state => ({
+  thread: state.threads.find(t => t.id === state.activeThreadId)
+});
+
+const mapDispatchToThreadProps = dispatch => ({
+  onMessageClick: id => store.dispatch({ type: "DELETE_MESSAGE", id }),
+  dispatch
+});
+
+const mergeThreadProps = (stateProps, dispatchProps) => ({
+  ...stateProps,
+  ...dispatchProps,
+  onMessageSubmit: text =>
+    dispatchProps.dispatch({
+      type: "ADD_MESSAGE",
+      text,
+      threadId: stateProps.thread.id
+    })
+});
+
+const ThreadDisplay = connect(
+  mapStateToThreadProps,
+  mapDispatchToThreadProps,
+  mergeThreadProps
+)(Thread);
+
+const Tabs = props => (
+  <div className="ui top attached tabular menu">
+    {props.tabs.map((tab, index) => (
       <div
         key={index}
         className={tab.active ? "active item" : "item"}
-        onClick={() => store.dispatch({ type: "OPEN_THREAD", id: tab.id })}
+        onClick={() => props.onClick(tab.id)}
       >
         {tab.title}
       </div>
-    ));
+    ))}
+  </div>
+);
 
-    return <div className="ui top attached tabular menu">{tabs}</div>;
-  }
-}
+const mapStateToTabsProps = state => {
+  const tabs = state.threads.map(t => ({
+    title: t.title,
+    active: t.id === state.activeThreadId,
+    id: t.id
+  }));
 
-class App extends React.Component {
-  componentDidMount() {
-    store.subscribe(() => this.forceUpdate());
-  }
+  return {
+    tabs
+  };
+};
 
-  render() {
-    const state = store.getState();
-    const activeThreadId = state.activeThreadId;
-    const threads = state.threads;
-    const activeThread = threads.find(t => t.id === activeThreadId);
-    const tabs = threads.map(t => ({
-      title: t.title,
-      active: t.id === activeThreadId,
-      id: t.id
-    }));
+const mapDispatchToTabsProps = dispatch => ({
+  onClick: id =>
+    dispatch({
+      type: "OPEN_THREAD",
+      id
+    })
+});
 
-    return (
-      <div className="ui segment">
-        <ThreadTabs tabs={tabs} />
-        <Thread thread={activeThread} />
-      </div>
-    );
-  }
-}
+const ThreadTabs = connect(
+  mapStateToTabsProps,
+  mapDispatchToTabsProps
+)(Tabs);
 
-export default App;
+const App = () => (
+  <div className="ui segment">
+    <ThreadTabs />
+    <ThreadDisplay />
+  </div>
+);
+
+const WrappedApp = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+export default WrappedApp;
