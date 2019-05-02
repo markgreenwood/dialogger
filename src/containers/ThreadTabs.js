@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { openThread } from "../actions";
 import Tabs from "../components/Tabs";
 
-const mapStateToTabsProps = state => {
+const mapStateToProps = state => {
   const tabs = state.threads.map(t => ({
     title: t.title,
     active: t.id === state.activeThreadId,
@@ -15,13 +15,13 @@ const mapStateToTabsProps = state => {
   };
 };
 
-const mapDispatchToTabsProps = dispatch => ({
+const mapDispatchToProps = dispatch => ({
   onClick: id => dispatch(openThread(id))
 });
 
 const ThreadTabs = connect(
-  mapStateToTabsProps,
-  mapDispatchToTabsProps
+  mapStateToProps,
+  mapDispatchToProps
 )(Tabs);
 
 export default ThreadTabs;

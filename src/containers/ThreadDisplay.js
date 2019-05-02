@@ -7,12 +7,12 @@ const mapStateToThreadProps = state => ({
   thread: state.threads.find(t => t.id === state.activeThreadId)
 });
 
-const mapDispatchToThreadProps = dispatch => ({
+const mapDispatchToProps = dispatch => ({
   onMessageClick: id => dispatch(deleteMessage(id)),
   dispatch
 });
 
-const mergeThreadProps = (stateProps, dispatchProps) => ({
+const mergeProps = (stateProps, dispatchProps) => ({
   ...stateProps,
   ...dispatchProps,
   onMessageSubmit: text =>
@@ -21,8 +21,8 @@ const mergeThreadProps = (stateProps, dispatchProps) => ({
 
 const ThreadDisplay = connect(
   mapStateToThreadProps,
-  mapDispatchToThreadProps,
-  mergeThreadProps
+  mapDispatchToProps,
+  mergeProps
 )(Thread);
 
 export default ThreadDisplay;

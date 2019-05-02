@@ -7,14 +7,15 @@ class TextFieldSubmit extends React.Component {
 
   onChange = e => this.setState({ value: e.target.value });
 
-  handleSubmit = () => {
+  handleSubmit = e => {
+    e.preventDefault();
     this.props.onSubmit(this.state.value);
     this.setState({ value: "" });
   };
 
   render() {
     return (
-      <div className="ui input">
+      <form className="ui input">
         <input onChange={this.onChange} value={this.state.value} type="text" />
         <button
           className="ui  primary button"
@@ -23,7 +24,7 @@ class TextFieldSubmit extends React.Component {
         >
           Submit
         </button>
-      </div>
+      </form>
     );
   }
 }
