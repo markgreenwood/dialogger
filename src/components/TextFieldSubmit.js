@@ -18,7 +18,7 @@ class TextFieldSubmit extends React.Component {
       <form className="ui input">
         <input onChange={this.onChange} value={this.state.value} type="text" />
         <button
-          className="ui  primary button"
+          className="ui primary button"
           onClick={this.handleSubmit}
           type="submit"
         >
